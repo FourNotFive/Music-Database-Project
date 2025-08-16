@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results - Music Database</title>
+    <style>
+        body { font-family: Arial; margin: 50px; }
+        .result { margin: 10px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #007acc; border-radius: 5px; }
+        .result.has-chords { border-left-color: #28a745; }
+        .result.estimated-chords { border-left-color: #ffc107; }
+        a { color: blue; text-decoration: none; }
+        .peak-info { color: #666; font-size: 14px; margin: 5px 0; }
+        .chord-info { color: #28a745; font-size: 14px; margin: 5px 0; font-weight: bold; }
+        .chord-progression { 
+            font-family: 'Courier New', monospace; 
+            font-size: 16px; 
+            font-weight: bold; 
+            color: #007acc; 
+            margin: 5px 0;
+        }
+        .genre-badge { 
+            background: #17a2b8; 
+            color: white; 
+            padding: 2px 8px; 
+            border-radius: 12px; 
+            font-size: 11px; 
+            margin-left: 10px;
+        }
+        .confidence { 
+            color: #6c757d; 
+            font-size: 12px; 
+            font-style: italic; 
+        }
+        .nav { margin: 20px 0; }
+        .nav a { 
+            padding: 10px; 
+            background: #007acc; 
+            color: white; 
+            text-decoration: none; 
+            margin: 5px; 
+            border-radius: 5px; 
+        }
+        .nav a:hover { background: #005a99; }
+        .legend { 
+            background: #e9ecef; 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin-bottom: 20px; 
+            font-size: 14px;
+        }
+        .legend-item { margin: 5px 0; }
+        .color-box { 
+            display: inline-block; 
+            width: 15px; 
+            height: 15px; 
+            margin-right: 5px; 
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="/">Main Search</a>
+        <a href="/patterns">Chord Patterns</a>
+    </div>
+
+    <div class="legend">
+        <strong>Legend:</strong>
+        <div class="legend-item">
+            <span class="color-box" style="background-color: #28a745;"></span>
+            Known chord progression (high confidence)
+        </div>
+        <div class="legend-item">
+            <span class="color-box" style="background-color: #ffc107;"></span>
+            Estimated chord progression (lower confidence)
+        </div>
+        <div class="legend-item">
+            <span class="color-box" style="background-color: #007acc;"></span>
+            No chord data available
+        </div>
+    </div>
+
+    <h1>
+        {% if search_type == 'date' %}
+            Songs from {{ search_term }}
+        {% else %}
+            Songs matching "{{ search_term }}"
+        {% endif %}
+    </h1>
+    
+    {% for _, row in results.iterrows() %}
+        <div class="result {{ 'has-chords' if row['match_confidence'] and row['match_confidence'] > 0.8 else ('estimated-chords' if row['chord_progression'] else '') }}">
+            <strong>{{ row['song'] }}</strong> by {{ row['performer'] }}
+            
+            {% if search_type == 'date' %}
+                <div class="peak-info">{{ row['chart_date'] }} - Position #{{ row['chart_position'] }}</div>
+            {% else %}
+                <div class="peak-info">Peak: #{{ row['peak_position'] }} on {{ row['peak_date'] }}</div>
+            {% endif %}
+            
+            {% if row['chord_progression'] %}
+                <div class="chord-info">
+                    🎵 <span class="chord-progression">{{ row['chord_progression'] }}</span>
+                    
+                    {% if row['genre'] and row['genre'] != 'Unknown' %}
+                        <span class="genre-badge">{{ row['genre'] }}</span>
+                    {% endif %}
+                    
+                    {% if row['key_signature'] %}
+                        | Key: {{ row['key_signature'] }}
+                    {% endif %}
+                    
+                    {% if row['nashville_notation'] %}
+                        | Nashville: {{ row['nashville_notation'] }}
+                    {% endif %}
+                </div>
+                
+                {% if row['match_confidence'] and row['match_confidence'] < 1.0 %}
+                    <div class="confidence">
+                        {% if row['match_confidence'] > 0.5 %}
+                            Estimated progression based on genre/era patterns
+                        {% else %}
+                            Low confidence estimate
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endfor %}
+    
+    <p><a href="/">← Back to search</a></p>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Music Database</title>
+    <style>
+        body { font-family: Arial; margin: 50px; }
+        input, button, select { padding: 10px; font-size: 16px; margin: 5px; }
+        .search-form { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        .date-inputs { display: none; }
+        .nav { margin: 20px 0; }
+        .nav a { padding: 10px; background: #007acc; color: white; text-decoration: none; margin: 5px; border-radius: 5px; }
+        .nav a:hover { background: #005a99; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="/">Main Search</a>
+        <a href="/patterns">Chord Patterns</a>
+    </div>
+
+    <h1>Billboard Hot 100 Database</h1>
+    <p>Search 349k+ Billboard entries and explore chord progressions from 679k+ songs!</p>
+    
+    <div class="search-form">
+        <form method="POST" action="/search">
+            <select name="search_type" onchange="toggleDateInputs(this.value)">
+                <option value="artist">Search by Artist</option>
+                <option value="song">Search by Song</option>
+                <option value="date">Search by Date Range</option>
+            </select>
+            
+            <div id="text-search">
+                <input type="text" name="search_term" placeholder="Enter search term...">
+            </div>
+            
+            <div id="date-search" class="date-inputs">
+                <input type="date" name="start_date" placeholder="Start date">
+                <input type="date" name="end_date" placeholder="End date">
+            </div>
+            
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <script>
+        function toggleDateInputs(searchType) {
+            const textSearch = document.getElementById('text-search');
+            const dateSearch = document.getElementById('date-search');
+            
+            if (searchType === 'date') {
+                textSearch.style.display = 'none';
+                dateSearch.style.display = 'block';
+                document.querySelector('input[name="search_term"]').required = false;
+            } else {
+                textSearch.style.display = 'block';
+                dateSearch.style.display = 'none';
+                document.querySelector('input[name="search_term"]').required = true;
+            }
+        }
+    </script>
+</body>
+</html>
