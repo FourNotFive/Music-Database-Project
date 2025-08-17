@@ -111,6 +111,29 @@ def search():
     conn.close()
     
     return render_template('search_results.html', search_type=search_type, search_term=search_term, results=results)
+@app.route('/songs-with-chords')
+def songs_with_chords():
+    conn = sqlite3.connect('music_database.db')
+    cursor = conn.cursor()
+    
+    # Get songs that have both Billboard and McGill chord data
+    cursor.execute('''
+        SELECT artist, song_title, year, billboard_song_id
+        FROM mcgill_chord_data 
+        WHERE billboard_song_id IS NOT NULL
+        ORDER BY artist, song_title
+    ''')
+    
+    songs = cursor.fetchall()
+    conn.close()
+    
+    return f"""
+    <h1>Songs with Chord Data ({len(songs)} songs)</h1>
+    <ul>
+    {''.join([f'<li>{song[0]} - {song[1]} ({song[2]})</li>' for song in songs])}
+    </ul>
+    <a href="/">Back to Home</a>
+    """
 
 if __name__ == '__main__':
     app.run(debug=True)
